@@ -104,9 +104,11 @@ class Gateway extends SslSocket
 			$binaryMessage = $messageEnvelope->getBinaryMessage();
 
 			// Send the message and check if all the bytes are written
-            // If the connection has been dropped, reconnect to APNS
-            $this->reconnectIfDropped();
-			$bytesSend = (int)fwrite($this->getConnection(), $binaryMessage);
+            try {
+                $bytesSend = (int)fwrite($this->getConnection(), $binaryMessage);
+            } catch (\Exception $e) {
+                $bytesSend = 0;
+            }
 
 			if (strlen($binaryMessage) !== $bytesSend)
 			{
@@ -154,7 +156,7 @@ class Gateway extends SslSocket
 		// Did waiting for the response succeed?
 		if (false === $changedStreams)
 		{
-			throw new \RuntimeException('Could not stream_select the APNS connection.');
+			return false;
 		}
 		// Did we receive a response?
 		else if ($changedStreams > 0)
@@ -172,7 +174,12 @@ class Gateway extends SslSocket
         $this->reconnectIfDropped();
 
 		// Check if there is something to read from the socket
-		$errorResponse = fread($this->getConnection(), self::ERROR_RESPONSE_SIZE);
+        try {
+            $errorResponse = fread($this->getConnection(), self::ERROR_RESPONSE_SIZE);
+        } catch (\Exception $e) {
+            $this->reconnectIfDropped();
+        }
+
 		if (false !== $errorResponse && self::ERROR_RESPONSE_SIZE === strlen($errorResponse))
 		{
 			// Got an error, disconnect
