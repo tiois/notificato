@@ -206,6 +206,8 @@ class Gateway extends SslSocket
 			}
 
 			// All messages that are send after the failed message should be send again
+			/*
+			// Edit : Do not requeue the messages following the failed one because we reconnect after any error
 			$this->logger->info('Requeueing ' . ($this->lastMessageId - $errorMessage['identifier']) . ' messages that where send after the failed message to the queue of Apns\Gateway with certificate "' . $this->getCertificate()->getDescription() . '"');
 			$lastMessageToResend = $this->lastMessageId;
 			for ($messageId = $errorMessage['identifier'] + 1; $lastMessageToResend >= $messageId; $messageId++)
@@ -226,6 +228,7 @@ class Gateway extends SslSocket
 					$this->logger->warning('Could not requeue message #' . $this->lastMessageId . ' "Envelope already purged from envelope store" to the queue of Apns\Gateway with certificate "' . $this->getCertificate()->getDescription() . '"');
 				}
 			}
+			*/
 
 			// Reconnect and go on
 			$this->connect();
